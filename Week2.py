@@ -132,6 +132,7 @@ class StrongBot(Robot):
 
     def __init__(self, name, brutality):
         super().__init__(name)
+
         self.brutality = brutality
 
     def decide_on_action(self, incoming_damage):
@@ -157,34 +158,43 @@ class CleverBot(Robot):
 
     def __init__(self, name, intelligence):
         super().__init__(name)
+
         self.intelligence = intelligence
+        self.dodge_percentage = 30 + 10 * intelligence
+        if self.dodge_percentage > 100:
+            self.dodge_percentage = 100
 
     def decide_on_action(self, incoming_damage):
+
         attack_strength = 0
 
         if self.energy > 0:
-            if self.energy > 2:
-                if random.randint(1,10) > 3 + self.intelligence:
+
+            if incoming_damage > 0:
+                dodge_successful = self.dodge()
+                if not dodge_successful:
                     self.health_points -= incoming_damage
-                    attack_strength = self.attack()
-                else:
-                    self.dodge()
+
             else:
-                self.health_points -= incoming_damage
                 attack_strength = self.attack()
 
         return attack_strength
 
     def dodge(self):
+
         self.energy -= 2
 
-# Now we can test it!
+        if random.randint(0, 99) < self.dodge_percentage:
+            return True
+        else:
+            return False
 
+# Now we can test it!
 robot_1 = Robot('spock')
 robot_2 = Robot('donald')
 
 strong_bot = StrongBot('Paul', 1)
-clever_bot = CleverBot('Gutza', 2)
+clever_bot = CleverBot('Gutza', 0)
 
 battleground = Battle(clever_bot, strong_bot)
 battleground.battle_until_the_end()
